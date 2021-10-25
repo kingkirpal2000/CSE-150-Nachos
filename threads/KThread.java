@@ -420,6 +420,7 @@ public class KThread {
             KThread parentT = currentThread;
             KThread t1 = new KThread( new Runnable () {
                 public void run() {
+                    System.out.println("T1 has started");
                     KThread c1 = new KThread( new Runnable(){
                         public void run() {
                             System.out.println("C1 Has run");
@@ -435,6 +436,7 @@ public class KThread {
 
             KThread t2 = new KThread( new Runnable() {
                 public void run() {
+                    System.out.println("T2 has started");
                     KThread c2 = new KThread(new Runnable () {
                         public void run() {
                             System.out.println("C2 has run");
@@ -449,8 +451,8 @@ public class KThread {
             t1.setName("T1");
             t2.setName("T2");
             t1.fork();
-            t2.fork();
             t1.join();
+            t2.fork();
             t2.join();
         }
     }
