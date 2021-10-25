@@ -295,6 +295,8 @@ public class KThread {
     }
 
 
+
+
     /**
      * Create the idle thread. Whenever there are no threads ready to be run, and
      * <tt>runNextThread()</tt> is called, it will run the idle thread. The idle
@@ -412,24 +414,69 @@ public class KThread {
         private int which;
     }
 
-    private static void joinTest2(){
-        System.out.println("joinTest2 starts");
-        KThread thread1 = new KThread( new Runnable () {
-            public void run() {
-                System.out.println("thread1 ran");
-            }
-        });
-        KThread thread2 = new KThread( new Runnable () {
-            public void run() {
-                System.out.println("thread2 ran");
-            }
-        });
-        thread1.setName("thread1");
-        thread2.setName("thread2");
-        thread1.fork();
-        thread2.fork();
-        thread1.join();
-        thread2.join();
+    private static class JoinTestOff3 implements Runnable {
+        public void run() {
+            System.out.println("Created and starting " + currentThread.toString());
+            KThread parentT = currentThread;
+            KThread t1 = new KThread( new Runnable () {
+                public void run() {
+                    KThread c1 = new KThread( new Runnable(){
+                        public void run() {
+                            System.out.println("C1 Has run");
+                        }
+                    });
+                    c1.setName("C1");
+                    c1.fork();
+                    c1.join();
+                    System.out.println("T1 has run");
+
+                }
+            });
+
+            KThread t2 = new KThread( new Runnable() {
+                public void run() {
+                    KThread c2 = new KThread(new Runnable () {
+                        public void run() {
+                            System.out.println("C2 has run");
+                        }
+                    });
+                    c2.setName("C2");
+                    c2.fork();
+                    c2.join();
+                    System.out.println("T2 has run");
+                }
+            });
+            t1.setName("T1");
+            t2.setName("T2");
+            t1.fork();
+            t2.fork();
+            t1.join();
+            t2.join();
+        }
+    }
+
+
+    private static class JoinTestOff2 implements Runnable {
+        public void run() {
+            System.out.println("Created and starting " + currentThread.toString());
+            KThread parentT = currentThread;
+            KThread t1 = new KThread( new Runnable () {
+                public void run() {
+                    System.out.println("T1 has run");
+                }
+            });
+            KThread t2 = new KThread( new Runnable () {
+                public void run() {
+                    System.out.println("T2 has run");
+                }
+            });
+            t1.setName("T1");
+            t2.setName("T2");
+            t1.fork();
+            t1.join();
+            t2.fork();
+            t2.join();
+        }
     }
 
     private static class JoinTestOff1 implements Runnable {
@@ -457,7 +504,12 @@ public class KThread {
         Lib.debug(dbgThread, "Enter KThread.selfTest");
 
         System.out.println(currentThread.toString());
-        KThread p = new KThread(new JoinTestOff1()).setName("parent1");
+        // KThread p = new KThread(new JoinTestOff1()).setName("parent1");
+        // p.fork();
+        // KThread p = new KThread( new JoinTestOff2()).setName("parent1T2");
+        // p.fork();
+        // p.join();
+        KThread p = new KThread( new JoinTestOff3()).setName("parent1T2");
         p.fork();
         p.join();
 
