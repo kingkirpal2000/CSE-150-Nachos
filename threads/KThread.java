@@ -111,7 +111,15 @@ public class KThread {
     public String getName() {
         return name;
     }
+    //my code start 
 
+    public long getWakeTime() {
+    	return wakeTime;
+    }
+    public void setWakeTime(long wakeTime) {
+    	this.wakeTime = wakeTime;
+    }
+    //my code end
     /**
      * Get the full name of this thread. This includes its name along with its
      * numerical ID. This name is used for debugging purposes only.
@@ -622,6 +630,7 @@ public class KThread {
     /** Number of times the KThread constructor was called. */
     private static int numCreated = 0;
     private boolean joined = false;
+    private static long wakeTime = -1;
 
     private LinkedList<KThread> joinQueue = new LinkedList<KThread>();
     private static ThreadQueue readyQueue = null;
