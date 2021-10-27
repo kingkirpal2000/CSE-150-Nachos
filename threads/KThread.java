@@ -399,20 +399,54 @@ public class KThread {
         Lib.assertTrue(this == currentThread);
     }
 
+    // private static class PingTest implements Runnable {
+    //     PingTest(int which) {
+    //         this.which = which;
+    //     }
+
+    //     public void run() {
+    //         for (int i = 0; i < 5; i++) {
+    //             System.out.println("*** The thread " + which + " looped " + i + " times");
+    //             currentThread.yield();
+    //         }
+    //     }
+
+    //     private int which;
+    // }
     private static class PingTest implements Runnable {
         PingTest(int which) {
             this.which = which;
         }
-
         public void run() {
-            for (int i = 0; i < 5; i++) {
-                System.out.println("*** The thread " + which + " looped " + i + " times");
+            for (int i=0; i<50000; i++) { // You may adjust the number of iterations
+                System.out.println("*** thread " + which + " looped " + i + " times");
                 currentThread.yield();
             }
+            //ThreadedKernel.alarm.waitUntil(2000);
         }
-
         private int which;
     }
+
+
+    private static void joinTest1 () {
+        KThread child1 = new KThread( new Runnable () {
+        public void run() {
+            System.out.println("I (heart) Nachos!");
+        }
+            });
+        child1.setName("child1").fork();
+        // We want the child to finish before we call join.  Although
+        // our solutions to the problems cannot busy wait, our test
+        // programs can!
+        for (int i = 0; i < 5; i++) {
+            System.out.println ("busy...");
+            KThread.currentThread().yield();
+        }
+        child1.join();
+        System.out.println("After joining, child1 should be finished.");
+        System.out.println("is it? " + (child1.status == statusFinished));
+        Lib.assertTrue((child1.status == statusFinished), " Expected child1 to be finished.");
+        }
 
     private static class JoinTestOff3 implements Runnable {
         public void run() {
@@ -511,9 +545,48 @@ public class KThread {
         // KThread p = new KThread( new JoinTestOff2()).setName("parent1T2");
         // p.fork();
         // p.join();
-        KThread p = new KThread( new JoinTestOff3()).setName("parent1T2");
-        p.fork();
-        p.join();
+        // KThread p = new KThread( new JoinTestOff3()).setName("parent1T2");
+        // p.fork();
+        // p.join();
+        // joinTest1();
+
+        Lib.debug(dbgThread, "Enter KThread.selfTest");
+        /**
+         * Allocate a new thread setting the target to point to a
+         * PingTest object whose run method will be called when the
+         * newly created thread executes.
+         */
+        KThread th1 = new KThread(new PingTest(1));
+        /**
+         * Set the name of the new thread to "forked thread 1"
+         */
+        th1.setName("forked thread 1");
+        /**
+         * Execute fork() to begin execution of the new thread
+         * (putting it in the ready queue). This new thread will
+         * eventually execute the PingTest object's run() method when
+         * scheduled. The current thread (that created this new thread)
+         * will return from the fork() method call resuming its own
+         * execution, thus, giving us 2 concurrent thread.
+         */
+        th1.fork();
+        /**
+         * The current thread that returned from fork() (creating the
+         * new thread th1 above) will then create its own PingTest
+         * object and execute the run method. So now we have two
+         * threads running the PingTest's run() method.
+         */
+        new PingTest(0).run();
+        /**
+         * Current thread calls join() on the newly created thread
+         * thus going to sleep till th1 finishes.
+         */
+        th1.join();
+        /**
+         * Try to join with th1 again. This should immediately return
+         * as th1 should have already finished.
+         */
+        th1.join();
 
     }
 
