@@ -1,12 +1,27 @@
 package nachos.threads;
 
+import java.util.Comparator;
+import java.util.TreeSet;
+
 import nachos.machine.*;
+
+class comp implements Comparator<KThread>{  
+    public int compare(KThread s1, KThread s2) {  
+    	long w1;
+    	long w2;
+    	w1 = s1.getWakeTime();
+    	w2 = s2.getWakeTime();
+        //return w1.compareTo(w2);
+    	return Long.compare(w1, w2);
+    }   
+}  
 
 /**
  * Uses the hardware timer to provide preemption, and to allow threads to sleep
  * until a certain time.
  */
 public class Alarm {
+		
     /**
      * Allocate a new Alarm. Set the machine's timer interrupt handler to this
      * alarm's callback.
@@ -15,9 +30,11 @@ public class Alarm {
      * alarm.
      */
     public Alarm() {
-	Machine.timer().setInterruptHandler(new Runnable() {
-		public void run() { timerInterrupt(); }
-	    });
+ 
+	    sleepQueue = new TreeSet<>(new comp());
+		Machine.timer().setInterruptHandler(new Runnable() {
+			public void run() { timerInterrupt(); }
+		    });
     }
 
     /**
@@ -27,7 +44,9 @@ public class Alarm {
      * that should be run.
      */
     public void timerInterrupt() {
-	KThread.currentThread().yield();
+		while(!sleepQueue.isEmpty() && sleepQueue.first().getWakeTime() < Machine.timer().getTime()) {
+			sleepQueue.pollFirst().ready();
+		}
     }
 
     /**
@@ -46,8 +65,27 @@ public class Alarm {
      */
     public void waitUntil(long x) {
 	// for now, cheat just to get something working (busy waiting is bad)
-	long wakeTime = Machine.timer().getTime() + x;
-	while (wakeTime > Machine.timer().getTime())
-	    KThread.yield();
+	    boolean intStatus = Machine.interrupt().disable();
+		KThread.currentThread().setWakeTime(Machine.timer().getTime() + x);
+		sleepQueue.add(KThread.currentThread());
+		KThread.currentThread().sleep();
+		//KThread.sleep();
+		Machine.interrupt().restore(intStatus);
+	    }
+ 
+    public static void alarmTest1() {
+    	int durations[] = {1000, 10*1000, 100*1000};
+    	long t0, t1;
+
+    	for (int d : durations) {
+    	    t0 = Machine.timer().getTime();
+    	    ThreadedKernel.alarm.waitUntil (d);
+    	    t1 = Machine.timer().getTime();
+    	    System.out.println ("alarmTest1: waited for " + (t1 - t0) + " ticks");
+    	}
     }
+
+        // Implement more test methods here ...
+
+    TreeSet<KThread> sleepQueue;
 }
