@@ -17,7 +17,7 @@ public class Boat {
 	static int AdultsOnOahu;
 	static int ChildrenOnMolokai; 
 	static int AdultsOnMolokai; 
-	static boolean BoatOnOahu; 
+	//static boolean BoatOnOahu; 
 	static Condition Children_On_Oahu;
 	static Condition Children_On_Molokai;
 	static Condition Adults_On_Oahu;
@@ -57,7 +57,7 @@ public class Boat {
 		AdultsOnOahu = TotalAdults;
 		ChildrenOnMolokai = 0;
 		AdultsOnMolokai = 0;
-		BoatOnOahu = true;
+		//BoatOnOahu = true;
 		Children_On_Oahu = new Condition(lock);
 		Children_On_Molokai = new Condition(lock);
 		Adults_On_Oahu = new Condition(lock);
@@ -142,17 +142,18 @@ public class Boat {
 			Adults_On_Molokai.wakeAll();
 			AdultsOnOahu = AdultsOnOahu - 1;
 			AdultsOnMolokai = AdultsOnMolokai + 1;
-			BoatOnOahu = false;
+			//BoatOnOahu = false;
 			Children_On_Molokai.wake();
+			//
 			
 			boat_is_on_oahu = false;
 			
 			//your code here
 			bg.ChildRideToOahu();
-			Children_On_Oahu.sleep();
+			Children_On_Molokai.sleep();
 			ChildrenOnOahu = ChildrenOnOahu + 1;
 			ChildrenOnMolokai = ChildrenOnMolokai - 1;
-			BoatOnOahu = true;
+			//BoatOnOahu = true;
 			Children_On_Oahu.sleep();
 			
 		} // while not done and adult still need to get to Molokai
@@ -171,10 +172,14 @@ public class Boat {
 			while (!boat_is_on_oahu) {
 
 				// your code here
+				Children_On_Molokai.wake();
 				bg.ChildRowToOahu();
+				Children_On_Oahu.wakeAll();
+				Children_On_Molokai.sleep();
 				ChildrenOnMolokai = ChildrenOnMolokai - 1;
 				ChildrenOnOahu = ChildrenOnOahu + 1;
-				BoatOnOahu = true;
+				boat_is_on_oahu = true;
+				
 				
 			} 
 
@@ -190,11 +195,14 @@ public class Boat {
 				Children_On_Oahu.wakeAll();
 				Children_On_Molokai.sleep();
 				
-				bg.ChildRowToMolokai();
-    			bg.ChildRideToMolokai();
-    			ChildrenOnOahu = ChildrenOnOahu - 2;
-    			ChildrenOnMolokai = ChildrenOnMolokai + 2;
-    			BoatOnOahu = false;
+				
+				
+				
+//				bg.ChildRowToMolokai();
+//    			bg.ChildRideToMolokai();
+//    			ChildrenOnOahu = ChildrenOnOahu - 2;
+//    			ChildrenOnMolokai = ChildrenOnMolokai + 2;
+//    			BoatOnOahu = false;
     			
     			//
     			
@@ -205,18 +213,20 @@ public class Boat {
 				boat_is_on_oahu = true;
 				
 				//your code here
+				Children_On_Molokai.wake();
 				ChildrenOnMolokai = ChildrenOnMolokai - 1;
 				ChildrenOnOahu = ChildrenOnOahu + 1;
-				
+				//
 				children_on_boat = 0;
 				
 				//your code here
-				bg.ChildRowToMolokai();
-    			bg.ChildRideToMolokai();
-    			ChildrenOnOahu = ChildrenOnOahu - 2;
-    			ChildrenOnMolokai = ChildrenOnMolokai + 2;
-    			BoatOnOahu = false;
-    			
+				
+//				bg.ChildRowToMolokai();
+//    			bg.ChildRideToMolokai();
+//    			ChildrenOnOahu = ChildrenOnOahu - 2;
+//    			ChildrenOnMolokai = ChildrenOnMolokai + 2;
+//    			//BoatOnOahu = false;
+    			//
 			}
 
 			// else this child should be a rower if there is a child in the boat
@@ -233,6 +243,7 @@ public class Boat {
 				//your code here
 				ChildrenOnOahu = ChildrenOnOahu - 2;
     			ChildrenOnMolokai = ChildrenOnMolokai + 2;
+    			//
     			
 				// check if we are all done
 				//if (checking condition) {
@@ -247,8 +258,10 @@ public class Boat {
 					bg.ChildRowToOahu();
 					
 					//your code here
+					Children_On_Molokai.wake();
 					ChildrenOnMolokai = ChildrenOnMolokai - 1;
 					ChildrenOnOahu = ChildrenOnOahu + 1;
+					//
 					
 					children_on_boat = 0;
 					boat_is_on_oahu = true;
@@ -258,7 +271,8 @@ public class Boat {
 	    			bg.ChildRideToMolokai();
 	    			ChildrenOnOahu = ChildrenOnOahu - 2;
 	    			ChildrenOnMolokai = ChildrenOnMolokai + 2;
-	    			BoatOnOahu = false;
+	    			boat_is_on_oahu = false;
+	    			//
 	    			
 				} 
 			} 
