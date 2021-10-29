@@ -11,6 +11,7 @@ public class Boat {
 	static int children_on_boat;
 	
 	// your code here
+	//Create Our Variables
 	static int TotalChildren;
 	static int TotalAdults;
 	static int ChildrenOnOahu;
@@ -22,7 +23,7 @@ public class Boat {
 	static Condition Children_On_Molokai;
 	static Condition Adults_On_Oahu;
 	static Condition Adults_On_Molokai;
-	
+	//
 	
 	public static void selfTest() {
 		BoatGrader b = new BoatGrader();
@@ -51,6 +52,7 @@ public class Boat {
 		children_on_boat = 0;
 		
 		// your code here
+		//Initialize Our Variables
 		TotalChildren = children;
 		ChildrenOnOahu = TotalChildren;
 		TotalAdults = adults;
@@ -62,6 +64,7 @@ public class Boat {
 		Children_On_Molokai = new Condition(lock);
 		Adults_On_Oahu = new Condition(lock);
 		Adults_On_Molokai = new Condition(lock);
+		//
 		
 		// Create threads here. See section 3.4 of the Nachos for Java
 		// Walkthrough linked from the projects page.
@@ -123,13 +126,14 @@ public class Boat {
 		while (not_done) {
 			
 			//your code here
-			Adults_On_Molokai.sleep();
-			Adults_On_Oahu.wakeAll();
-			// check see if children still need it
-//			ChildItinerary();
-//			bg.AdultRideToMolokai();
-//			AdultsOnOahu = AdultsOnOahu - 1;
-//			AdultsOnMolokai = AdultsOnMolokai + 1;
+			while(ChildrenOnOahu>1 || children_on_boat!=0 || boat_is_on_oahu==false) {
+				//wake children and put to sleep adults on Oahu
+				Children_On_Oahu.wakeAll();
+				Adults_On_Oahu.sleep();
+				
+			}
+			
+
 
 			} // after while, boat is on Oahu and children do not need it.
 
@@ -138,23 +142,18 @@ public class Boat {
 			bg.AdultRowToMolokai();
 			
 			//your code here 
-			Adults_On_Oahu.sleep();
-			Adults_On_Molokai.wakeAll();
 			AdultsOnOahu = AdultsOnOahu - 1;
 			AdultsOnMolokai = AdultsOnMolokai + 1;
-			//BoatOnOahu = false;
-			Children_On_Molokai.wake();
+	
+			
 			//
 			
 			boat_is_on_oahu = false;
 			
 			//your code here
-			bg.ChildRideToOahu();
-			Children_On_Molokai.sleep();
-			ChildrenOnOahu = ChildrenOnOahu + 1;
-			ChildrenOnMolokai = ChildrenOnMolokai - 1;
-			//BoatOnOahu = true;
-			Children_On_Oahu.sleep();
+			Children_On_Molokai.wake();
+			Adults_On_Molokai.sleep();
+			//
 			
 		} // while not done and adult still need to get to Molokai
 
@@ -172,13 +171,7 @@ public class Boat {
 			while (!boat_is_on_oahu) {
 
 				// your code here
-				Children_On_Molokai.wake();
-				bg.ChildRowToOahu();
-				Children_On_Oahu.wakeAll();
-				Children_On_Molokai.sleep();
-				ChildrenOnMolokai = ChildrenOnMolokai - 1;
-				ChildrenOnOahu = ChildrenOnOahu + 1;
-				boat_is_on_oahu = true;
+				Children_On_Oahu.sleep();
 				
 				
 			} 
@@ -194,15 +187,6 @@ public class Boat {
 				// your code here
 				Children_On_Oahu.wakeAll();
 				Children_On_Molokai.sleep();
-				
-				
-				
-				
-//				bg.ChildRowToMolokai();
-//    			bg.ChildRideToMolokai();
-//    			ChildrenOnOahu = ChildrenOnOahu - 2;
-//    			ChildrenOnMolokai = ChildrenOnMolokai + 2;
-//    			BoatOnOahu = false;
     			
     			//
     			
@@ -213,19 +197,15 @@ public class Boat {
 				boat_is_on_oahu = true;
 				
 				//your code here
-				Children_On_Molokai.wake();
 				ChildrenOnMolokai = ChildrenOnMolokai - 1;
 				ChildrenOnOahu = ChildrenOnOahu + 1;
 				//
 				children_on_boat = 0;
 				
 				//your code here
-				
-//				bg.ChildRowToMolokai();
-//    			bg.ChildRideToMolokai();
-//    			ChildrenOnOahu = ChildrenOnOahu - 2;
-//    			ChildrenOnMolokai = ChildrenOnMolokai + 2;
-//    			//BoatOnOahu = false;
+				Children_On_Oahu.wakeAll();
+				Adults_On_Oahu.wakeAll();
+				Children_On_Oahu.sleep();
     			//
 			}
 
@@ -247,10 +227,12 @@ public class Boat {
     			
 				// check if we are all done
 				//if (checking condition) {
-
+    				if(ChildrenOnMolokai==TotalChildren) {
+    					not_done = false;
+    					return;
+    				
 					// set terminal bool to false to end all loops and return
-					not_done = false;
-					return;
+					
 				} // boat terminates after this if statement is executed
 
 				// else we are not done so we need to send one back to Oahu
@@ -258,7 +240,6 @@ public class Boat {
 					bg.ChildRowToOahu();
 					
 					//your code here
-					Children_On_Molokai.wake();
 					ChildrenOnMolokai = ChildrenOnMolokai - 1;
 					ChildrenOnOahu = ChildrenOnOahu + 1;
 					//
@@ -267,15 +248,20 @@ public class Boat {
 					boat_is_on_oahu = true;
 					
 					//your code here
-					bg.ChildRowToMolokai();
-	    			bg.ChildRideToMolokai();
-	    			ChildrenOnOahu = ChildrenOnOahu - 2;
-	    			ChildrenOnMolokai = ChildrenOnMolokai + 2;
-	    			boat_is_on_oahu = false;
+					Children_On_Oahu.wakeAll();
+					Adults_On_Oahu.wakeAll();
+					Children_On_Oahu.sleep();
+					
+					
+
 	    			//
 	    			
 				} 
 			} 
+			//
+			else {
+				Children_On_Oahu.sleep();
+			}
 		} 
 //    static void SampleItinerary()
 //    {
@@ -290,4 +276,5 @@ public class Boat {
 //	bg.ChildRideToMolokai();
 //    }
 
+}
 }
