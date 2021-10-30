@@ -23,15 +23,15 @@ public class Condition2
      *				<tt>wake()</tt>, or <tt>wakeAll()</tt>.
      */
     private Lock conditionLock;
-    private LinkedList queue;
+    private LinkedList waitQueue;
     private int counter;
-    private ThreadQueue waitThreadQueue = ThreadedKernel.scheduler.newThreadQueue(false);
+    private ThreadQueue readyQueue = ThreadedKernel.scheduler.newThreadQueue(false);
     
     
     public Condition2(Lock conditionLock) 
     {
     	this.conditionLock = conditionLock;
-    	LinkedList queue = new LinkedList();
+    	LinkedList waitQueue = new LinkedList();
     }
 
     /**
@@ -45,13 +45,13 @@ public class Condition2
     {
     	Lib.assertTrue(conditionLock.isHeldByCurrentThread());
     	int counter = 0;
-    	queue.add(counter);
+    	waitQueue.add(counter);
     	conditionLock.release();
     	
     	boolean ifDisable = Machine.interrupt().disable();
     	if(counter == 0)
     	{
-    		waitThreadQueue.waitForAccess(KThread.currentThread());
+    		readyQueue.waitForAccess(KThread.currentThread());
     		KThread.sleep();
     	}
     	else
@@ -72,10 +72,10 @@ public class Condition2
     	Lib.assertTrue(conditionLock.isHeldByCurrentThread());
     	boolean ifDisable = Machine.interrupt().disable();
     	
-    	if(!queue.isEmpty())
+    	if(!waitQueue.isEmpty())
     	{
-    		queue.removeFirst();
-    		KThread thread = waitThreadQueue.nextThread();
+    		waitQueue.removeFirst();
+    		KThread thread = readyQueue.nextThread();
     		
     		if(thread != null)
     		{
@@ -86,6 +86,7 @@ public class Condition2
     			counter++;
     		}
     	}
+    	Machine.interrupt().restore(ifDisable);
     }
 
     /**
@@ -95,7 +96,7 @@ public class Condition2
     public void wakeAll() 
     {
     	Lib.assertTrue(conditionLock.isHeldByCurrentThread());
-    	while(!queue.isEmpty())
+    	while(!waitQueue.isEmpty())
     	{
     		wake();
     	}
@@ -152,8 +153,8 @@ public class Condition2
         // implemented join yet, then comment out the calls to join
         // and instead uncomment the loop with yield; the loop has the
         // same effect, but is a kludgy way to do it.
-        consumer.join();
-        producer.join();
+        //consumer.join();
+        //producer.join();
         //for (int i = 0; i < 50; i++) { KThread.currentThread().yield(); }
 }
 }
