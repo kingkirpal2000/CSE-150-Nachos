@@ -12,7 +12,9 @@ class comp implements Comparator<KThread>{
     	w1 = s1.getWakeTime();
     	w2 = s2.getWakeTime();
         //return w1.compareTo(w2);
-    	return Long.compare(w1, w2);
+    	if(w1==w2) return 0;
+    	else if (w1<w2) return -1;
+    	else return 1;
     }   
 }  
 
@@ -31,7 +33,7 @@ public class Alarm {
      */
     public Alarm() {
  
-	    sleepQueue = new TreeSet<>(new comp());
+	    sleepQueue = new TreeSet<KThread>(new comp());
 		Machine.timer().setInterruptHandler(new Runnable() {
 			public void run() { timerInterrupt(); }
 		    });
@@ -73,17 +75,17 @@ public class Alarm {
 		Machine.interrupt().restore(intStatus);
 	    }
  
-    public static void alarmTest1() {
-    	int durations[] = {1000, 10*1000, 100*1000};
-    	long t0, t1;
-
-    	for (int d : durations) {
-    	    t0 = Machine.timer().getTime();
-    	    ThreadedKernel.alarm.waitUntil (d);
-    	    t1 = Machine.timer().getTime();
-    	    System.out.println ("alarmTest1: waited for " + (t1 - t0) + " ticks");
-    	}
-    }
+//    public static void alarmTest1() {
+//    	int durations[] = {1000, 10*1000, 100*1000};
+//    	long t0, t1;
+//
+//    	for (int d : durations) {
+//    	    t0 = Machine.timer().getTime();
+//    	    ThreadedKernel.alarm.waitUntil (d);
+//    	    t1 = Machine.timer().getTime();
+//    	    System.out.println ("alarmTest1: waited for " + (t1 - t0) + " ticks");
+//    	}
+//    }
 
         // Implement more test methods here ...
 
