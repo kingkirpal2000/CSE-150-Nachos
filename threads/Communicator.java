@@ -108,5 +108,13 @@ public class Communicator {
         thread2.fork();
         thread1.join();
         thread2.join();
+<<<<<<< HEAD
 }
 }
+=======
+}
+}
+
+	
+
+>>>>>>> e0c1c7738359c232dae3f6a681d0e88c874fc131
