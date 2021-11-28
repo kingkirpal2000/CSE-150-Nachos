@@ -111,7 +111,7 @@ public class KThread {
     public String getName() {
         return name;
     }
-    //my code start 
+    //my code start
 
     public long getWakeTime() {
     	return wakeTime;
@@ -597,7 +597,6 @@ public class KThread {
         th1.join();
 
     }
-
     private static final char dbgThread = 't';
 
     /**

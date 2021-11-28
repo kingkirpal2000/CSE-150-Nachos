@@ -28,7 +28,7 @@ public class UserProcess {
 	for (int i=0; i<numPhysPages; i++)
 	    pageTable[i] = new TranslationEntry(i,i, true,false,false,false);
     }
-    
+
     /**
      * Allocate and return a new process of the correct class. The class name
      * is specified by the <tt>nachos.conf</tt> key
@@ -51,7 +51,7 @@ public class UserProcess {
     public boolean execute(String name, String[] args) {
 	if (!load(name, args))
 	    return false;
-	
+
 	new UThread(this).setName(name).fork();
 
 	return true;
@@ -132,7 +132,7 @@ public class UserProcess {
 	Lib.assertTrue(offset >= 0 && length >= 0 && offset+length <= data.length);
 
 	byte[] memory = Machine.processor().getMemory();
-	
+
 	// for now, just assume that virtual addresses equal physical addresses
 	if (vaddr < 0 || vaddr >= memory.length)
 	    return 0;
@@ -175,7 +175,7 @@ public class UserProcess {
 	Lib.assertTrue(offset >= 0 && length >= 0 && offset+length <= data.length);
 
 	byte[] memory = Machine.processor().getMemory();
-	
+
 	// for now, just assume that virtual addresses equal physical addresses
 	if (vaddr < 0 || vaddr >= memory.length)
 	    return 0;
@@ -198,7 +198,7 @@ public class UserProcess {
      */
     private boolean load(String name, String[] args) {
 	Lib.debug(dbgProcess, "UserProcess.load(\"" + name + "\")");
-	
+
 	OpenFile executable = ThreadedKernel.fileSystem.open(name, false);
 	if (executable == null) {
 	    Lib.debug(dbgProcess, "\topen failed");
@@ -241,7 +241,7 @@ public class UserProcess {
 	}
 
 	// program counter initially points at the program entry point
-	initialPC = coff.getEntryPoint();	
+	initialPC = coff.getEntryPoint();
 
 	// next comes the stack; stack pointer initially points to top of it
 	numPages += stackPages;
@@ -259,7 +259,7 @@ public class UserProcess {
 
 	this.argc = args.length;
 	this.argv = entryOffset;
-	
+
 	for (int i=0; i<argv.length; i++) {
 	    byte[] stringOffsetBytes = Lib.bytesFromInt(stringOffset);
 	    Lib.assertTrue(writeVirtualMemory(entryOffset,stringOffsetBytes) == 4);
@@ -291,7 +291,7 @@ public class UserProcess {
 	// load sections
 	for (int s=0; s<coff.getNumSections(); s++) {
 	    CoffSection section = coff.getSection(s);
-	    
+
 	    Lib.debug(dbgProcess, "\tinitializing " + section.getName()
 		      + " section (" + section.getLength() + " pages)");
 
@@ -302,7 +302,7 @@ public class UserProcess {
 		section.loadPage(i, vpn);
 	    }
 	}
-	
+
 	return true;
     }
 
@@ -310,7 +310,7 @@ public class UserProcess {
      * Release any resources allocated by <tt>loadSections()</tt>.
      */
     protected void unloadSections() {
-    }    
+    }
 
     /**
      * Initialize the processor's registers in preparation for running the
@@ -336,12 +336,12 @@ public class UserProcess {
     }
 
     /**
-     * Handle the halt() system call. 
+     * Handle the halt() system call.
      */
     private int handleHalt() {
 
 	Machine.halt();
-	
+
 	Lib.assertNotReached("Machine.halt() did not halt machine!");
 	return 0;
     }
@@ -379,7 +379,7 @@ public class UserProcess {
      * <tr><td>8</td><td><tt>int  close(int fd);</tt></td></tr>
      * <tr><td>9</td><td><tt>int  unlink(char *name);</tt></td></tr>
      * </table>
-     * 
+     *
      * @param	syscall	the syscall number.
      * @param	a0	the first syscall argument.
      * @param	a1	the second syscall argument.
@@ -421,13 +421,63 @@ public class UserProcess {
 				       );
 	    processor.writeRegister(Processor.regV0, result);
 	    processor.advancePC();
-	    break;				       
-				       
+	    break;
+
 	default:
 	    Lib.debug(dbgProcess, "Unexpected exception: " +
 		      Processor.exceptionNames[cause]);
 	    Lib.assertNotReached("Unexpected exception");
 	}
+    }
+
+    private int handleCreate(int vaddr){
+        String fileName = readVirtualMemoryString(vaddr, 32);
+        int index = -1;
+
+        for(int i = 2; i < 16; i++){ // finds an open fd
+            if(files[i] == null){
+                index = i;
+                break;
+            }
+        }
+
+        OpenFile creatingFile = null; // temp empty file
+
+        if(fileName != null) creatingFile = ThreadedKernel.fileSystem.open(fileName, true); // try creating file
+        else return -1; // error reading fileName
+        if(creatingFile == null) return -1; // error opening file
+        else {
+            if(index < 2 || index > 16){
+                return -1; // incorrect fd allocated
+            }
+            files[index] = creatingFile;
+            return index;
+        }
+    }
+
+    private int handleOpen(int vaddr) {
+        String fileName = readVirtualMemoryString(vaddr, 32);
+        int index = -1;
+
+        for(int i = 2; i < 16; i++){
+            if(files[i] == null){
+                index = i;
+                break;
+            }
+        }
+
+        OpenFile creatingFile = null;
+
+        if(fileName != null) creatingFile = ThreadedKernel.fileSystem.open(fileName, false);
+        else return -1;
+        if(creatingFile == null) return -1;
+        else {
+            if(index < 2 || index > 16){
+                return -1;
+            }
+            files[index] = creatingFile;
+            return index;
+        }
     }
 
     /** The program being run by this process. */
@@ -440,10 +490,12 @@ public class UserProcess {
 
     /** The number of pages in the program's stack. */
     protected final int stackPages = 8;
-    
+
     private int initialPC, initialSP;
     private int argc, argv;
-	
+
     private static final int pageSize = Processor.pageSize;
     private static final char dbgProcess = 'a';
+
+    protected OpenFile[] files = new OpenFile[16]; // fd arr
 }
